@@ -16,7 +16,7 @@ public class GetInfluxDb {
         InfluxDBClient client = InfluxDBClientFactory.create("http://localhost:8086", token.toCharArray());
 
         try {
-            String query = "from(bucket: \""+bucket+"\") |> range(start: -24h) "
+            String query = "from(bucket: \""+bucket+"\") |> range(start: 2021-04-25T14:48:00Z, stop: 2021-04-25T14:49:00Z ) "
                     + "|> filter(fn: (r) => r._field == \"Price\" and r.symbol == \"btcusdt@trade\" ) "
                     + "|> aggregateWindow(every: 2s, fn: mean, createEmpty: false)";
             List<FluxTable> tables = client.getQueryApi().query(query, org);
