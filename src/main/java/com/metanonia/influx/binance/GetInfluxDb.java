@@ -1,4 +1,4 @@
-package com.metanonia.influx.demo;
+package com.metanonia.influx.binance;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
@@ -8,15 +8,18 @@ import com.influxdb.query.FluxTable;
 import java.util.List;
 
 public class GetInfluxDb {
-    static String token = "wy2DoXjn4G6vdpLZIgNXXXWWF3s72QvshwW9n6MNk1uurazz3fiUx3RFkYBL3pe5bepJx8TOzJl5p9QuOENnvQ==";
-
     public static void main(String[] args) {
+        if(args.length != 1) {
+            System.exit(0);
+        }
+        String token = args[0];
+
         String bucket = "blockchain";
         String org = "metanonia";
-        InfluxDBClient client = InfluxDBClientFactory.create("http://localhost:8086", token.toCharArray());
+        InfluxDBClient client = InfluxDBClientFactory.create("http://dvlp.metanonia.com:8086", token.toCharArray());
 
         try {
-            String query = "from(bucket: \""+bucket+"\") |> range(start: 2021-04-25T14:48:00Z, stop: 2021-04-25T14:49:00Z ) "
+            String query = "from(bucket: \""+bucket+"\") |> range(start: 2021-04-25T14:48:00Z, stop: 2021-06-25T14:49:00Z ) "
                     + "|> filter(fn: (r) => r._field == \"Price\" and r.symbol == \"btcusdt@trade\" ) "
                     + "|> aggregateWindow(every: 2s, fn: mean, createEmpty: false)";
             List<FluxTable> tables = client.getQueryApi().query(query, org);

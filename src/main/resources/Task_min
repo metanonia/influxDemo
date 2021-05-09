@@ -1,0 +1,52 @@
+{
+ "meta": {
+  "version": "1",
+  "type": "task",
+  "name": "blockchain_min-Template",
+  "description": "template created from task: blockchain_min"
+ },
+ "content": {
+  "data": {
+   "type": "task",
+   "attributes": {
+    "status": "active",
+    "name": "blockchain_min",
+    "flux": "option task = {name: \"blockchain_min\", every: 1h, offset: 0m}\n\ndata = from(bucket: \"blockchain\")\n\t|> range(start: -task.every)\n\t|> filter(fn: (r) =>\n\t\t(r._field == \"Price\" and r.symbol == \"btcusdt@trade\"))\n\ndata\n\t|> aggregateWindow(every: 1m, fn: mean)\n\t|> to(bucket: \"blockchain_min\")",
+    "every": "1h"
+   },
+   "relationships": {
+    "label": {
+     "data": []
+    }
+   }
+  },
+  "included": []
+ },
+ "labels": []
+}
+
+// Sample
+// Task options
+option task = {
+    name: "cqinterval15m",
+    every: 1h,
+    offset: 0m,
+    concurrency: 1,
+}
+
+// Data source
+data = from(bucket: "example-bucket")
+  |> range(start: -task.every)
+  |> filter(fn: (r) =>
+    r._measurement == "mem" and
+    r.host == "myHost"
+  )
+
+data
+  // Data transformation
+  |> aggregateWindow(
+    every: 5m,
+    fn: mean
+  )
+  // Data destination
+  |> to(bucket: "example-downsampled")

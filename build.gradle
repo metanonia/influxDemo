@@ -1,18 +1,29 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'java'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'com.metanonia.influx.binance'
+version '1.0'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+jar {
+    finalizedBy shadowJar
+    manifest {
+        attributes 'Main-Class': 'com.metanonia.influx.binance.App'
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20210307'
-    // https://mvnrepository.com/artifact/org.java-websocket/Java-WebSocket
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
     compile "com.influxdb:influxdb-client-java:1.8.0"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
