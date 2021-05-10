@@ -28,18 +28,37 @@ public class MySqlApi {
         return conn;
     }
 
-    public int insertData(String yhmhm, Double value, String curHash) {
+    public int insertData(String yhmhm, Double value, String curHash, String sumHash) {
         int ret = 0;
         try {
-            String sql = "INSERT INTO binance (ymdhm, price, curHash) values (?,?, ?)";
+            String sql = "INSERT INTO binance (ymdhm, price, curHash, sumHash) values (?,?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, yhmhm);
             pstmt.setDouble(2, value);
             pstmt.setString(3, curHash);
+            pstmt.setString(4, sumHash);
 
             ret = pstmt.executeUpdate();
 
             pstmt.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public String getLastSumHash() {
+        String ret = null;
+        try {
+            String sql = "SELECT sumHash FROM binance ORDER BY seqno DESC LIMIT 1";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet resultSet = pstmt.executeQuery();
+            if(resultSet.next() == false) return null;
+            else {
+                return resultSet.getString(1);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();

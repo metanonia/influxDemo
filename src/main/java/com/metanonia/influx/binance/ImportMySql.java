@@ -4,11 +4,11 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +35,7 @@ public class ImportMySql {
         try {
             MySqlApi mySqlApi = new MySqlApi(args[1], args[2]);
 
-            String query = "from(bucket: \""+bucket+"\") |> range(start: -2h ) ";
+            String query = "from(bucket: \""+bucket+"\") |> range(start: -24h ) ";
             List<FluxTable> tables = client.getQueryApi().query(query, org);
 
             for (int i = 0; i < tables.size(); i++) {
@@ -48,11 +48,20 @@ public class ImportMySql {
                     Date date = Date.from(time.toInstant());
                     Double value = (Double) row.get("_value");
                     String msg = sdf.format(date) + ":" + String.format("%f", value);
-                    System.out.println(msg);
-                    int ret = mySqlApi.insertData(sdf.format(date), value, msg);
-                    if(ret == 1) {
 
+                    String curStr = DigestUtils.sha512Hex(msg);
+                    BigInteger curHash = new BigInteger(curStr,16);
+                    String hash = mySqlApi.getLastSumHash();
+                    BigInteger lastHash = null;
+                    BigInteger sumHash = null;
+                    if(hash == null) sumHash = curHash;
+                    else {
+                        lastHash = new BigInteger(hash, 16);
+                        sumHash = lastHash.xor(curHash);
                     }
+
+                    mySqlApi.insertData(sdf.format(date), value, curStr, sumHash.toString(16));
+
                 }
             }
         }

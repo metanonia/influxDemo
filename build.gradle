@@ -22,6 +22,7 @@ repositories {
 }
 
 dependencies {
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
