@@ -22,6 +22,7 @@ repositories {
 }
 
 dependencies {
+    implementation group: 'org.web3j', name: 'core', version: '5.0.0'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'

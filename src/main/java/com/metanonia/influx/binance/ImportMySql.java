@@ -5,6 +5,7 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,21 +17,21 @@ import java.util.Map;
 import java.util.TimeZone;
 
 public class ImportMySql {
-    /*
-    String query = String.format("from(bucket: \\"%s\\") |> range(start: -1h)", bucket);
-    List<FluxTable> tables = client.getQueryApi().query(query, org);
-     */
+    //UTC--2021-05-11T11-35-00.64731000Z--cc096f00f623510498f4dfa1f25a4bc3187a2824.json : fx`)y8a*5F
     public static void main(String[] args) {
         if(args.length != 3) {
             System.exit(0);
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
         sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+        SimpleDateFormat mdf = new SimpleDateFormat("mm");
+        mdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 
         String token = args[0];
         String bucket = "blockchain_min";
         String org = "metanonia";
         InfluxDBClient client = InfluxDBClientFactory.create("http://dvlp.metanonia.com:8086", token.toCharArray());
+        Web3Api web3Api = new Web3Api();
 
         try {
             MySqlApi mySqlApi = new MySqlApi(args[1], args[2]);
@@ -60,8 +61,21 @@ public class ImportMySql {
                         sumHash = lastHash.xor(curHash);
                     }
 
-                    mySqlApi.insertData(sdf.format(date), value, curStr, sumHash.toString(16));
+                    int ret = mySqlApi.insertData(sdf.format(date), value, curStr, sumHash.toString(16));
+                    if(ret != 0) {
+                        // 10분마다 블록체인에 저장
+                        int mm = Integer.parseInt(mdf.format(date));
+                        if (mm % 10 == 0) {
+                            JSONObject jObj = new JSONObject();
+                            jObj.put("message", msg);
+                            jObj.put("curHash", curStr);
+                            jObj.put("sumHash", sumHash.toString(16));
 
+                            String rmsg = web3Api.sendData(jObj.toString());
+                            Thread.sleep(60000);    // batch 처리.. 블록생성 시간 대응
+                            System.out.println(rmsg);
+                        }
+                    }
                 }
             }
         }

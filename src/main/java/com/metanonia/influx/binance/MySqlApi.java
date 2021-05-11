@@ -1,5 +1,6 @@
 package com.metanonia.influx.binance;
 
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,12 +39,15 @@ public class MySqlApi {
             pstmt.setString(3, curHash);
             pstmt.setString(4, sumHash);
 
+
             ret = pstmt.executeUpdate();
 
             pstmt.close();
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (SQLException throwables) {
+            int err = throwables.getErrorCode();
+            if(err != 1062)
+                throwables.printStackTrace();
         }
 
         return ret;
